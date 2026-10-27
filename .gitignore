@@ -1,0 +1,12 @@
+out/
+target/
+*.class
+.vscode/
+
+# Local runtime data
+data/digitsense.db
+data/exports/
+data/preprocessed/
+data/canvas-samples/
+data/canvas-training/
+
