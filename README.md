@@ -17,7 +17,7 @@ DigitSense is a Java desktop application that recognizes handwritten digits usin
 
 ## Requirements
 
-- Java JDK 17 or newer
+- Java JDK 25 or newer (Java 25 is the latest LTS release)
 - Apache Maven 3.9 or newer
 - Desktop environment with a graphical display
 
