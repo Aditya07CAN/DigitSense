@@ -6,7 +6,7 @@ We thank the following contributors for their work on DigitSense:
 
 - **Aditya** ([@Aditya07CAN](https://github.com/Aditya07CAN)) - Creator & Maintainer
 - **Dasarath Mali** ([@Dasarath-Mali](https://github.com/Dasarath-Mali)) - Contributor
-  - Location: [`Dasarath_java/`](Dasarath_java/)
+  - Location: [`Dasarath_JAVA/`](Dasarath_JAVA/)
   - Contributions:
     - 6-Model Benchmark Suite (Logistic Regression, k-Nearest Neighbors, Random Forest ensemble, Multilayer Perceptron, LeNet-style CNN, Deeper CNN with BatchNorm & Dropout)
     - Quick Predict Panel on sidebar

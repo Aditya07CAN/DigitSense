@@ -125,13 +125,13 @@ Include the `models` folder when sharing a trained version. The `data` folder co
 
 ```text
 DigitSense/
-├── Dasarath_java/                           Dasarath's extended ML comparison & Quick Predict module
+├── Dasarath_JAVA/                           Dasarath's extended ML comparison & Quick Predict module
 │   ├── src/main/java/com/digitsense/        Application sources with 6 models & UI panels
 │   ├── src/test/java/                       Automated tests
 │   ├── models/                              Saved CNN models
 │   ├── docs/                                Architecture notes
-│   ├── pom.xml                              Maven configuration for Dasarath_java
-│   └── README.md                            Detailed documentation for Dasarath_java module
+│   ├── pom.xml                              Maven configuration for Dasarath_JAVA
+│   └── README.md                            Detailed documentation for Dasarath_JAVA module
 ├── src/main/java/com/digitsense/app/        Application entry point
 ├── src/main/java/com/digitsense/ui/         AWT interface and canvas
 ├── src/main/java/com/digitsense/image/      Image processing
@@ -148,7 +148,7 @@ DigitSense/
 
 ## Modules
 
-### Dasarath_java
+### Dasarath_JAVA
 
 Contributed by **[Dasarath Mali](https://github.com/Dasarath-Mali)**.
 Includes:
@@ -163,9 +163,9 @@ Includes:
 - **10×10 Confusion Matrix Viewer** with visual colour-coded heatmap.
 - **Per-Class Metrics Dialog** (Precision, Recall, F1 for digits 0–9).
 
-To run the `Dasarath_java` module:
+To run the `Dasarath_JAVA` module:
 ```bash
-cd Dasarath_java
+cd Dasarath_JAVA
 mvn clean compile
 mvn exec:java
 ```
@@ -173,6 +173,6 @@ mvn exec:java
 ## Contributors
 
 - **[Aditya07CAN](https://github.com/Aditya07CAN)** - Project Creator & Maintainer
-- **[Dasarath Mali](https://github.com/Dasarath-Mali)** - Contributor (`Dasarath_java` module)
+- **[Dasarath Mali](https://github.com/Dasarath-Mali)** - Contributor (`Dasarath_JAVA` module)
 
 More technical details are available in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
