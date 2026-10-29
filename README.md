@@ -125,6 +125,13 @@ Include the `models` folder when sharing a trained version. The `data` folder co
 
 ```text
 DigitSense/
+├── Dasarath_java/                           Dasarath's extended ML comparison & Quick Predict module
+│   ├── src/main/java/com/digitsense/        Application sources with 6 models & UI panels
+│   ├── src/test/java/                       Automated tests
+│   ├── models/                              Saved CNN models
+│   ├── docs/                                Architecture notes
+│   ├── pom.xml                              Maven configuration for Dasarath_java
+│   └── README.md                            Detailed documentation for Dasarath_java module
 ├── src/main/java/com/digitsense/app/        Application entry point
 ├── src/main/java/com/digitsense/ui/         AWT interface and canvas
 ├── src/main/java/com/digitsense/image/      Image processing
@@ -138,5 +145,34 @@ DigitSense/
 ├── docs/                                    Architecture notes
 └── pom.xml                                 Maven configuration
 ```
+
+## Modules
+
+### Dasarath_java
+
+Contributed by **[Dasarath Mali](https://github.com/Dasarath-Mali)**.
+Includes:
+- **Quick Predict Panel**: Sidebar mini-canvas with immediate prediction and model switcher.
+- **Model Comparison Suite**: Trains & benchmarks 6 models on MNIST:
+  - Logistic Regression (raw 784 pixels)
+  - k-Nearest Neighbors (KNN $k=3$)
+  - Random Forest (bagged neural ensemble)
+  - Multilayer Perceptron (MLP)
+  - LeNet-style CNN
+  - Deeper CNN (Batch Normalization & Dropout)
+- **10×10 Confusion Matrix Viewer** with visual colour-coded heatmap.
+- **Per-Class Metrics Dialog** (Precision, Recall, F1 for digits 0–9).
+
+To run the `Dasarath_java` module:
+```bash
+cd Dasarath_java
+mvn clean compile
+mvn exec:java
+```
+
+## Contributors
+
+- **[Aditya07CAN](https://github.com/Aditya07CAN)** - Project Creator & Maintainer
+- **[Dasarath Mali](https://github.com/Dasarath-Mali)** - Contributor (`Dasarath_java` module)
 
 More technical details are available in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
