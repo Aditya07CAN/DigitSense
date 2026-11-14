@@ -125,6 +125,12 @@ Include the `models` folder when sharing a trained version. The `data` folder co
 
 ```text
 DigitSense/
+├── Abhinav_70592/                           Abhinav's modernized AI Studio UI module
+│   ├── src/main/java/com/digitsense/        Application sources with modern UI & 6 models
+│   ├── models/                              Pre-trained models
+│   ├── pom.xml                              Maven configuration
+│   ├── run.bat / run.ps1                    Launcher scripts
+│   └── README.md                            Module documentation
 ├── Dasarath_JAVA/                           Dasarath's extended ML comparison & Quick Predict module
 │   ├── src/main/java/com/digitsense/        Application sources with 6 models & UI panels
 │   ├── src/test/java/                       Automated tests
@@ -133,7 +139,7 @@ DigitSense/
 │   ├── pom.xml                              Maven configuration for Dasarath_JAVA
 │   └── README.md                            Detailed documentation for Dasarath_JAVA module
 ├── src/main/java/com/digitsense/app/        Application entry point
-├── src/main/java/com/digitsense/ui/         AWT interface and canvas
+├── src/main/java/com/digitsense/ui/         Modernized Swing interface, theme & canvas
 ├── src/main/java/com/digitsense/image/      Image processing
 ├── src/main/java/com/digitsense/model/      CNN prediction classes
 ├── src/main/java/com/digitsense/binary/     Binary conversion
@@ -147,6 +153,16 @@ DigitSense/
 ```
 
 ## Modules
+
+### Abhinav_70592
+
+Contributed by **[Abhinav](https://github.com/abhigorithm)**.
+Includes:
+- **Modern UI Theme (`UITheme`)**: Dark/vibrant theme with high-contrast palette.
+- **Enhanced Drawing Studio**: Double-buffered anti-aliased canvas, 7-color swatches, stroke size selector, eraser tool, and guide grid.
+- **Modernized Quick Predict**: Mini-canvas with live colored confidence progress bar.
+- **Model Benchmark Arena**: Modern table with live benchmark progress bar.
+- **High-DPI Dialogs**: $10 \times 10$ Confusion Matrix heatmap and Per-Class Metrics inspector.
 
 ### Dasarath_JAVA
 

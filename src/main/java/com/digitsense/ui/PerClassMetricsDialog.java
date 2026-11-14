@@ -3,81 +3,137 @@ package com.digitsense.ui;
 import com.digitsense.model.ModelMetrics;
 
 import java.awt.BorderLayout;
-import java.awt.Button;
 import java.awt.Color;
-import java.awt.Dialog;
+import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Font;
 import java.awt.Frame;
-import java.awt.Label;
-import java.awt.Panel;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
 
-/** Dialog showing per-class precision, recall, and F1 for a selected model. */
-public class PerClassMetricsDialog extends Dialog {
+/**
+ * Modern dialog showing per-class precision, recall, and F1 metrics for a selected model.
+ */
+public class PerClassMetricsDialog extends JDialog {
 
     public PerClassMetricsDialog(Frame parent, ModelMetrics metrics) {
-        super(parent, "Per-Class Metrics - " + metrics.getModelName(), true);
+        super(parent, "Per-Class Performance - " + metrics.getModelName(), true);
 
         setLayout(new BorderLayout(8, 8));
-        setBackground(new Color(235, 240, 248));
+        getContentPane().setBackground(UITheme.BG_MAIN);
 
-        Label titleLabel = new Label("Per-Class Metrics: " + metrics.getModelName(), Label.CENTER);
-        titleLabel.setFont(new Font("SansSerif", Font.BOLD, 14));
-        titleLabel.setBackground(new Color(31, 52, 81));
-        titleLabel.setForeground(Color.WHITE);
+        // ── Header ──
+        JPanel headerPanel = new JPanel(new BorderLayout(8, 4));
+        headerPanel.setBackground(UITheme.BG_SURFACE);
+        headerPanel.setBorder(new EmptyBorder(12, 16, 12, 16));
 
-        // Header
-        Label header = new Label(
-                "  Digit    Precision     Recall        F1");
-        header.setFont(new Font("Monospaced", Font.BOLD, 13));
-        header.setBackground(new Color(200, 212, 228));
+        JLabel titleLabel = new JLabel("🎯 Per-Class Performance: " + metrics.getModelName());
+        titleLabel.setFont(UITheme.FONT_TITLE);
+        titleLabel.setForeground(UITheme.TEXT_MAIN);
 
-        // Data rows
-        java.awt.List dataList = new java.awt.List(10, false);
-        dataList.setFont(new Font("Monospaced", Font.PLAIN, 13));
-        dataList.setBackground(Color.WHITE);
+        JLabel subtitleLabel = new JLabel(
+                String.format("Overall Accuracy: %.2f%%  •  Macro Precision: %.2f%%  •  Macro F1: %.2f%%",
+                        metrics.getAccuracy() * 100,
+                        metrics.getMacroPrecision() * 100,
+                        metrics.getMacroF1() * 100));
+        subtitleLabel.setFont(UITheme.FONT_BODY);
+        subtitleLabel.setForeground(UITheme.SUCCESS);
+
+        headerPanel.add(titleLabel, BorderLayout.NORTH);
+        headerPanel.add(subtitleLabel, BorderLayout.SOUTH);
+
+        // ── Metrics Table ──
+        String[] columnNames = {"Digit Class", "Precision", "Recall", "F1-Score"};
+        DefaultTableModel tableModel = new DefaultTableModel(columnNames, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
 
         double[] prec = metrics.getPrecisionPerClass();
         double[] rec = metrics.getRecallPerClass();
         double[] f1 = metrics.getF1PerClass();
 
         for (int digit = 0; digit < 10; digit++) {
-            dataList.add(String.format("    %d      %6.2f%%       %6.2f%%      %6.2f%%",
-                    digit, prec[digit] * 100, rec[digit] * 100, f1[digit] * 100));
+            tableModel.addRow(new Object[]{
+                    "Digit " + digit,
+                    String.format("%.2f%%", prec[digit] * 100),
+                    String.format("%.2f%%", rec[digit] * 100),
+                    String.format("%.2f%%", f1[digit] * 100)
+            });
         }
-        dataList.add("  ─────────────────────────────────────────");
-        dataList.add(String.format("  Macro    %6.2f%%       %6.2f%%      %6.2f%%",
-                metrics.getMacroPrecision() * 100,
-                metrics.getMacroRecall() * 100,
-                metrics.getMacroF1() * 100));
-        dataList.add(String.format("  Overall accuracy: %6.2f%%", metrics.getAccuracy() * 100));
 
-        Button closeButton = new Button("Close");
-        closeButton.setBackground(new Color(95, 108, 125));
-        closeButton.setForeground(Color.WHITE);
+        // Add Macro row
+        tableModel.addRow(new Object[]{
+                "Macro Average",
+                String.format("%.2f%%", metrics.getMacroPrecision() * 100),
+                String.format("%.2f%%", metrics.getMacroRecall() * 100),
+                String.format("%.2f%%", metrics.getMacroF1() * 100)
+        });
+
+        JTable table = new JTable(tableModel);
+        table.setRowHeight(28);
+        table.setFont(UITheme.FONT_BODY);
+        table.setBackground(UITheme.BG_CARD);
+        table.setForeground(UITheme.TEXT_MAIN);
+        table.setGridColor(UITheme.BORDER);
+        table.getTableHeader().setFont(UITheme.FONT_HEADER);
+        table.getTableHeader().setBackground(UITheme.BG_SURFACE);
+        table.getTableHeader().setForeground(UITheme.TEXT_MAIN);
+
+        // Center cell renderer with custom coloring
+        DefaultTableCellRenderer renderer = new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value,
+                                                           boolean isSelected, boolean hasFocus,
+                                                           int row, int column) {
+                super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                setHorizontalAlignment(JLabel.CENTER);
+                if (row == 10) { // Macro Average row
+                    setFont(UITheme.FONT_BOLD);
+                    setForeground(UITheme.CYAN);
+                    setBackground(UITheme.BG_SURFACE);
+                } else if (column == 0) {
+                    setFont(UITheme.FONT_BOLD);
+                    setForeground(UITheme.WARNING);
+                    setBackground(UITheme.BG_CARD);
+                } else {
+                    setFont(UITheme.FONT_BODY);
+                    setForeground(UITheme.TEXT_MAIN);
+                    setBackground(UITheme.BG_CARD);
+                }
+                return this;
+            }
+        };
+
+        for (int i = 0; i < table.getColumnCount(); i++) {
+            table.getColumnModel().getColumn(i).setCellRenderer(renderer);
+        }
+
+        JScrollPane scrollPane = new JScrollPane(table);
+        scrollPane.getViewport().setBackground(UITheme.BG_CARD);
+        scrollPane.setBorder(new EmptyBorder(8, 12, 8, 12));
+
+        // ── Bottom Panel ──
+        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 14, 10));
+        bottomPanel.setBackground(UITheme.BG_SURFACE);
+        JButton closeButton = UITheme.createButton("Close", UITheme.PRIMARY, UITheme.PRIMARY_HOVER);
         closeButton.addActionListener(event -> dispose());
-
-        Panel contentPanel = new Panel(new BorderLayout(4, 4));
-        contentPanel.add(header, BorderLayout.NORTH);
-        contentPanel.add(dataList, BorderLayout.CENTER);
-
-        Panel bottomPanel = new Panel(new FlowLayout(FlowLayout.CENTER));
         bottomPanel.add(closeButton);
 
-        add(titleLabel, BorderLayout.NORTH);
-        add(contentPanel, BorderLayout.CENTER);
+        add(headerPanel, BorderLayout.NORTH);
+        add(scrollPane, BorderLayout.CENTER);
         add(bottomPanel, BorderLayout.SOUTH);
 
-        setSize(420, 380);
+        setSize(480, 480);
         setLocationRelativeTo(parent);
-        addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosing(WindowEvent event) {
-                dispose();
-            }
-        });
     }
 }
-

@@ -6,116 +6,166 @@ import com.digitsense.model.ModelFactory;
 import com.digitsense.model.PredictionResult;
 
 import java.awt.BorderLayout;
-import java.awt.Button;
-import java.awt.Choice;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.GridLayout;
-import java.awt.Label;
-import java.awt.Panel;
+import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JProgressBar;
+import javax.swing.border.EmptyBorder;
 
-/** Compact quick-prediction panel placed on the left side of the main window. */
-public class QuickPredictPanel extends Panel {
+/**
+ * Compact quick-prediction sidebar panel with real-time confidence feedback.
+ */
+public class QuickPredictPanel extends JPanel {
 
     private final DigitCanvas miniCanvas;
-    private final Label resultDigitLabel;
-    private final Label resultConfLabel;
-    private final Label resultAltLabel;
-    private final Label statusLabel;
-    private final Choice modelChoice;
-    private final Button predictButton;
-    private final Button clearButton;
+    private final JLabel resultDigitLabel;
+    private final JLabel resultConfLabel;
+    private final JProgressBar confidenceBar;
+    private final JLabel resultAltLabel;
+    private final JLabel statusLabel;
+    private final JComboBox<String> modelChoice;
+    private final JButton predictButton;
+    private final JButton clearButton;
 
     public QuickPredictPanel() {
-        setLayout(new BorderLayout(4, 4));
-        setBackground(new Color(224, 232, 243));
-        setPreferredSize(new Dimension(185, 0));
+        setLayout(new BorderLayout(8, 8));
+        setBackground(UITheme.BG_SURFACE);
+        setBorder(new EmptyBorder(10, 10, 10, 10));
+        setPreferredSize(new Dimension(210, 0));
 
-        // ── Title ──
-        Label titleLabel = new Label("Quick Predict", Label.CENTER);
-        titleLabel.setFont(new Font("SansSerif", Font.BOLD, 13));
-        titleLabel.setBackground(new Color(31, 52, 81));
-        titleLabel.setForeground(Color.WHITE);
+        // ── Title Header ──
+        JPanel titlePanel = new JPanel(new BorderLayout());
+        titlePanel.setBackground(UITheme.BG_SURFACE);
+        JLabel titleLabel = new JLabel("⚡ Quick Predict", JLabel.CENTER);
+        titleLabel.setFont(UITheme.FONT_HEADER);
+        titleLabel.setForeground(UITheme.TEXT_MAIN);
+        titlePanel.add(titleLabel, BorderLayout.CENTER);
 
-        // ── Mini canvas ──
-        miniCanvas = new DigitCanvas(150, 150);
-        miniCanvas.setPreferredSize(new Dimension(155, 155));
-        Panel canvasWrap = new Panel(new FlowLayout(FlowLayout.CENTER, 4, 4));
-        canvasWrap.setBackground(new Color(224, 232, 243));
-        canvasWrap.add(miniCanvas);
+        // ── Mini Canvas Container ──
+        miniCanvas = new DigitCanvas(160, 160);
+        miniCanvas.setPreferredSize(new Dimension(160, 160));
+        miniCanvas.setStrokeWidth(16);
+
+        JPanel canvasCard = new JPanel(new FlowLayout(FlowLayout.CENTER, 4, 4)) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(UITheme.BG_CARD);
+                g2.fillRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 10, 10);
+                g2.setColor(UITheme.BORDER);
+                g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 10, 10);
+                g2.dispose();
+                super.paintComponent(g);
+            }
+        };
+        canvasCard.setOpaque(false);
+        canvasCard.add(miniCanvas);
 
         // ── Buttons ──
-        predictButton = new Button("Predict");
-        predictButton.setBackground(new Color(39, 116, 172));
-        predictButton.setForeground(Color.WHITE);
-        predictButton.setFont(new Font("SansSerif", Font.BOLD, 11));
+        predictButton = UITheme.createButton("Predict", UITheme.PRIMARY, UITheme.PRIMARY_HOVER);
+        clearButton = UITheme.createButton("Clear", UITheme.DANGER, UITheme.DANGER_HOVER);
 
-        clearButton = new Button("Clear");
-        clearButton.setBackground(new Color(95, 108, 125));
-        clearButton.setForeground(Color.WHITE);
-        clearButton.setFont(new Font("SansSerif", Font.BOLD, 11));
-
-        Panel buttonPanel = new Panel(new FlowLayout(FlowLayout.CENTER, 4, 2));
-        buttonPanel.setBackground(new Color(224, 232, 243));
+        JPanel buttonPanel = new JPanel(new GridLayout(1, 2, 6, 0));
+        buttonPanel.setOpaque(false);
         buttonPanel.add(predictButton);
         buttonPanel.add(clearButton);
 
-        // ── Results ──
-        resultDigitLabel = new Label("Digit: –", Label.LEFT);
-        resultDigitLabel.setFont(new Font("SansSerif", Font.BOLD, 18));
-        resultDigitLabel.setForeground(new Color(31, 52, 81));
+        // ── Result Display Card ──
+        JPanel resultCard = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(UITheme.BG_CARD);
+                g2.fillRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 8, 8);
+                g2.setColor(UITheme.BORDER);
+                g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 8, 8);
+                g2.dispose();
+                super.paintComponent(g);
+            }
+        };
+        resultCard.setOpaque(false);
+        resultCard.setLayout(new BorderLayout(4, 4));
+        resultCard.setBorder(new EmptyBorder(8, 8, 8, 8));
 
-        resultConfLabel = new Label("Conf: –", Label.LEFT);
-        resultConfLabel.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        resultDigitLabel = new JLabel("–", JLabel.CENTER);
+        resultDigitLabel.setFont(new Font("Segoe UI", Font.BOLD, 36));
+        resultDigitLabel.setForeground(UITheme.CYAN);
 
-        resultAltLabel = new Label("Alt: –", Label.LEFT);
-        resultAltLabel.setFont(new Font("SansSerif", Font.PLAIN, 11));
-        resultAltLabel.setForeground(new Color(100, 100, 130));
+        resultConfLabel = new JLabel("Confidence: –", JLabel.CENTER);
+        resultConfLabel.setFont(UITheme.FONT_SMALL);
+        resultConfLabel.setForeground(UITheme.TEXT_MUTED);
 
-        statusLabel = new Label("Draw & predict", Label.CENTER);
-        statusLabel.setFont(new Font("SansSerif", Font.ITALIC, 10));
-        statusLabel.setForeground(new Color(100, 110, 130));
+        confidenceBar = new JProgressBar(0, 100);
+        confidenceBar.setValue(0);
+        confidenceBar.setStringPainted(true);
+        confidenceBar.setForeground(UITheme.SUCCESS);
+        confidenceBar.setBackground(UITheme.BG_INPUT);
+        confidenceBar.setFont(UITheme.FONT_SMALL);
+        confidenceBar.setPreferredSize(new Dimension(100, 14));
 
-        Panel resultsPanel = new Panel(new GridLayout(4, 1, 0, 2));
-        resultsPanel.setBackground(new Color(224, 232, 243));
-        resultsPanel.add(resultDigitLabel);
-        resultsPanel.add(resultConfLabel);
-        resultsPanel.add(resultAltLabel);
-        resultsPanel.add(statusLabel);
+        resultAltLabel = new JLabel("Alternatives: –", JLabel.CENTER);
+        resultAltLabel.setFont(UITheme.FONT_SMALL);
+        resultAltLabel.setForeground(UITheme.TEXT_FAINT);
 
-        // ── Model selector ──
-        Label modelLabel = new Label("Model:", Label.LEFT);
-        modelLabel.setFont(new Font("SansSerif", Font.PLAIN, 11));
+        statusLabel = new JLabel("Sketch a digit & predict", JLabel.CENTER);
+        statusLabel.setFont(new Font("Segoe UI", Font.ITALIC, 11));
+        statusLabel.setForeground(UITheme.WARNING);
 
-        modelChoice = new Choice();
-        modelChoice.setFont(new Font("SansSerif", Font.PLAIN, 11));
+        JPanel resultDetails = new JPanel(new GridLayout(4, 1, 0, 3));
+        resultDetails.setOpaque(false);
+        resultDetails.add(resultConfLabel);
+        resultDetails.add(confidenceBar);
+        resultDetails.add(resultAltLabel);
+        resultDetails.add(statusLabel);
+
+        resultCard.add(resultDigitLabel, BorderLayout.NORTH);
+        resultCard.add(resultDetails, BorderLayout.CENTER);
+
+        // ── Model Selector ──
+        JPanel modelPanel = new JPanel(new BorderLayout(2, 4));
+        modelPanel.setOpaque(false);
+        JLabel modelLabel = new JLabel("Architecture:");
+        modelLabel.setFont(UITheme.FONT_SMALL);
+        modelLabel.setForeground(UITheme.TEXT_MUTED);
+
+        modelChoice = new JComboBox<>();
+        modelChoice.setFont(UITheme.FONT_BODY);
+        modelChoice.setBackground(UITheme.BG_INPUT);
+        modelChoice.setForeground(UITheme.TEXT_MAIN);
         for (String name : ModelFactory.getAvailableModelNames()) {
-            modelChoice.add(name);
+            modelChoice.addItem(name);
         }
 
-        Panel modelPanel = new Panel(new GridLayout(2, 1));
-        modelPanel.setBackground(new Color(224, 232, 243));
-        modelPanel.add(modelLabel);
-        modelPanel.add(modelChoice);
+        modelPanel.add(modelLabel, BorderLayout.NORTH);
+        modelPanel.add(modelChoice, BorderLayout.CENTER);
 
-        // ── Assemble center ──
-        Panel centerPanel = new Panel(new BorderLayout(4, 4));
-        centerPanel.setBackground(new Color(224, 232, 243));
-        centerPanel.add(canvasWrap, BorderLayout.NORTH);
+        // ── Assemble Center & Bottom ──
+        JPanel centerContainer = new JPanel(new BorderLayout(6, 6));
+        centerContainer.setOpaque(false);
+        centerContainer.add(canvasCard, BorderLayout.NORTH);
+        centerContainer.add(buttonPanel, BorderLayout.CENTER);
 
-        Panel controlsPanel = new Panel(new BorderLayout(4, 4));
-        controlsPanel.setBackground(new Color(224, 232, 243));
-        controlsPanel.add(buttonPanel, BorderLayout.NORTH);
-        controlsPanel.add(resultsPanel, BorderLayout.CENTER);
-        controlsPanel.add(modelPanel, BorderLayout.SOUTH);
+        JPanel bottomContainer = new JPanel(new BorderLayout(6, 6));
+        bottomContainer.setOpaque(false);
+        bottomContainer.add(resultCard, BorderLayout.NORTH);
+        bottomContainer.add(modelPanel, BorderLayout.SOUTH);
 
-        add(titleLabel, BorderLayout.NORTH);
-        add(centerPanel, BorderLayout.CENTER);
-        add(controlsPanel, BorderLayout.SOUTH);
+        add(titlePanel, BorderLayout.NORTH);
+        add(centerContainer, BorderLayout.CENTER);
+        add(bottomContainer, BorderLayout.SOUTH);
 
         registerEvents();
     }
@@ -124,49 +174,68 @@ public class QuickPredictPanel extends Panel {
         predictButton.addActionListener(event -> runPrediction());
         clearButton.addActionListener(event -> {
             miniCanvas.clear();
-            resultDigitLabel.setText("Digit: –");
-            resultConfLabel.setText("Conf: –");
-            resultAltLabel.setText("Alt: –");
-            statusLabel.setText("Draw & predict");
+            resultDigitLabel.setText("–");
+            resultDigitLabel.setForeground(UITheme.CYAN);
+            resultConfLabel.setText("Confidence: –");
+            confidenceBar.setValue(0);
+            resultAltLabel.setText("Alternatives: –");
+            statusLabel.setText("Sketch a digit & predict");
+            statusLabel.setForeground(UITheme.TEXT_FAINT);
         });
     }
 
     private void runPrediction() {
         predictButton.setEnabled(false);
         statusLabel.setText("Predicting...");
+        statusLabel.setForeground(UITheme.INFO);
 
         Thread worker = new Thread(() -> {
             try {
-                BufferedImage processed = ImagePreprocessor.preprocess(
-                        miniCanvas.getDrawingImage());
-                String selectedModel = modelChoice.getSelectedItem();
+                BufferedImage processed = ImagePreprocessor.preprocess(miniCanvas.getDrawingImage());
+                String selectedModel = (String) modelChoice.getSelectedItem();
                 DigitModel model = ModelFactory.loadModelByName(selectedModel);
                 PredictionResult result = model.predict(processed);
 
                 EventQueue.invokeLater(() -> {
                     if (result.isValidDigit()) {
-                        resultDigitLabel.setText("Digit: " + result.digit());
-                        resultConfLabel.setText("Conf: "
-                                + Math.round(result.confidence() * 100) + "%");
+                        resultDigitLabel.setText(String.valueOf(result.digit()));
+                        resultDigitLabel.setForeground(UITheme.SUCCESS);
+                        int confPct = (int) Math.round(result.confidence() * 100);
+                        resultConfLabel.setText("Confidence: " + confPct + "%");
+                        confidenceBar.setValue(confPct);
+                        if (confPct >= 80) {
+                            confidenceBar.setForeground(UITheme.SUCCESS);
+                        } else if (confPct >= 50) {
+                            confidenceBar.setForeground(UITheme.WARNING);
+                        } else {
+                            confidenceBar.setForeground(UITheme.DANGER);
+                        }
                         resultAltLabel.setText("Alt: " + result.alternativesSummary());
                         statusLabel.setText("Prediction complete");
+                        statusLabel.setForeground(UITheme.SUCCESS);
                     } else {
-                        resultDigitLabel.setText("Digit: ?");
-                        resultConfLabel.setText("Conf: –");
-                        resultAltLabel.setText("No valid digit detected");
-                        statusLabel.setText("Try drawing a clearer digit");
+                        resultDigitLabel.setText("?");
+                        resultDigitLabel.setForeground(UITheme.WARNING);
+                        resultConfLabel.setText("Confidence: –");
+                        confidenceBar.setValue(0);
+                        resultAltLabel.setText("Draw clearer stroke");
+                        statusLabel.setText("Digit not recognized");
+                        statusLabel.setForeground(UITheme.WARNING);
                     }
                     predictButton.setEnabled(true);
                 });
-            } catch (Exception exception) {
+            } catch (Exception ex) {
                 EventQueue.invokeLater(() -> {
-                    statusLabel.setText("Error: " + exception.getMessage());
+                    statusLabel.setText("Prediction error");
+                    statusLabel.setForeground(UITheme.DANGER);
                     predictButton.setEnabled(true);
                 });
             }
         }, "quick-predict-worker");
-        worker.setDaemon(true);
         worker.start();
     }
-}
 
+    public DigitCanvas getMiniCanvas() {
+        return miniCanvas;
+    }
+}

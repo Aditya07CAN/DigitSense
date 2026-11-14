@@ -4,102 +4,169 @@ import com.digitsense.model.ModelBenchmark;
 import com.digitsense.model.ModelMetrics;
 
 import java.awt.BorderLayout;
-import java.awt.Button;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.FlowLayout;
-import java.awt.Font;
 import java.awt.Frame;
-import java.awt.Label;
-import java.awt.Panel;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JProgressBar;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
+import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
 
-/** Panel that trains, evaluates, and compares all six digit recognition models. */
-public class CompareModelsPanel extends Panel {
+/**
+ * Modern panel that trains, evaluates, and benchmarks all six digit recognition models.
+ */
+public class CompareModelsPanel extends JPanel {
 
-    private final Button runBenchmarkButton;
-    private final Button viewConfusionButton;
-    private final Button viewPerClassButton;
-    private final Label progressLabel;
-    private final Label headerRow;
-    private final java.awt.List resultsList;
-    private final Label selectedModelLabel;
+    private final JButton runBenchmarkButton;
+    private final JButton viewConfusionButton;
+    private final JButton viewPerClassButton;
+    private final JLabel progressLabel;
+    private final JProgressBar progressBar;
+    private final JTable resultsTable;
+    private final DefaultTableModel tableModel;
+    private final JLabel selectedModelLabel;
     private List<ModelMetrics> benchmarkResults = new ArrayList<>();
     private final Frame parentFrame;
 
     public CompareModelsPanel(Frame parentFrame) {
         this.parentFrame = parentFrame;
-        setLayout(new BorderLayout(6, 6));
-        setBackground(new Color(235, 240, 248));
+        setLayout(new BorderLayout(8, 8));
+        setBackground(UITheme.BG_MAIN);
+        setBorder(new EmptyBorder(12, 14, 12, 14));
 
-        // ── Header ──
-        Panel headerPanel = new Panel(new BorderLayout());
-        headerPanel.setBackground(new Color(31, 52, 81));
-        Label titleLabel = new Label("  Compare Models", Label.LEFT);
-        titleLabel.setForeground(Color.WHITE);
-        titleLabel.setFont(new Font("SansSerif", Font.BOLD, 15));
-        runBenchmarkButton = new Button("Run Benchmark");
-        runBenchmarkButton.setBackground(new Color(39, 116, 172));
-        runBenchmarkButton.setForeground(Color.WHITE);
-        runBenchmarkButton.setFont(new Font("SansSerif", Font.BOLD, 12));
-        Panel btnWrap = new Panel(new FlowLayout(FlowLayout.RIGHT));
-        btnWrap.setBackground(new Color(31, 52, 81));
-        btnWrap.add(runBenchmarkButton);
-        headerPanel.add(titleLabel, BorderLayout.CENTER);
-        headerPanel.add(btnWrap, BorderLayout.EAST);
+        // ── Header Panel ──
+        JPanel headerPanel = new JPanel(new BorderLayout(10, 6));
+        headerPanel.setBackground(UITheme.BG_SURFACE);
+        headerPanel.setBorder(new EmptyBorder(10, 14, 10, 14));
 
-        // ── Progress ──
-        progressLabel = new Label("Click 'Run Benchmark' to train & evaluate all models on MNIST");
-        progressLabel.setFont(new Font("SansSerif", Font.PLAIN, 12));
-        progressLabel.setBackground(new Color(218, 228, 241));
+        JLabel titleLabel = new JLabel("⚡ Model Benchmark Arena");
+        titleLabel.setFont(UITheme.FONT_TITLE);
+        titleLabel.setForeground(UITheme.TEXT_MAIN);
 
-        // ── Column headers ──
-        headerRow = new Label(
-                "  Model                   Accuracy  Precision   Recall     F1      Time");
-        headerRow.setFont(new Font("Monospaced", Font.BOLD, 12));
-        headerRow.setBackground(new Color(200, 212, 228));
+        JLabel subtitleLabel = new JLabel("Evaluate all 6 architectures (Logistic Regression, KNN, Random Forest, MLP, LeNet, Deeper CNN)");
+        subtitleLabel.setFont(UITheme.FONT_SMALL);
+        subtitleLabel.setForeground(UITheme.TEXT_MUTED);
 
-        // ── Results list ──
-        resultsList = new java.awt.List(8, false);
-        resultsList.setFont(new Font("Monospaced", Font.PLAIN, 12));
-        resultsList.setBackground(Color.WHITE);
+        JPanel titles = new JPanel(new BorderLayout(2, 2));
+        titles.setOpaque(false);
+        titles.add(titleLabel, BorderLayout.NORTH);
+        titles.add(subtitleLabel, BorderLayout.SOUTH);
 
-        // ── Bottom buttons ──
-        viewConfusionButton = new Button("View Confusion Matrix");
-        viewConfusionButton.setBackground(new Color(104, 83, 153));
-        viewConfusionButton.setForeground(Color.WHITE);
+        runBenchmarkButton = UITheme.createButton("Run Benchmark", UITheme.PRIMARY, UITheme.PRIMARY_HOVER);
+
+        headerPanel.add(titles, BorderLayout.CENTER);
+        headerPanel.add(runBenchmarkButton, BorderLayout.EAST);
+
+        // ── Progress Bar & Status ──
+        progressLabel = new JLabel("Click 'Run Benchmark' to train and evaluate models on MNIST");
+        progressLabel.setFont(UITheme.FONT_BODY);
+        progressLabel.setForeground(UITheme.WARNING);
+
+        progressBar = new JProgressBar(0, 100);
+        progressBar.setValue(0);
+        progressBar.setStringPainted(true);
+        progressBar.setForeground(UITheme.SUCCESS);
+        progressBar.setBackground(UITheme.BG_INPUT);
+        progressBar.setPreferredSize(new Dimension(100, 16));
+        progressBar.setVisible(false);
+
+        JPanel progressPanel = new JPanel(new BorderLayout(6, 4));
+        progressPanel.setOpaque(false);
+        progressPanel.setBorder(new EmptyBorder(4, 2, 6, 2));
+        progressPanel.add(progressLabel, BorderLayout.NORTH);
+        progressPanel.add(progressBar, BorderLayout.SOUTH);
+
+        // ── Table ──
+        String[] columns = {"Model Architecture", "Accuracy", "Precision", "Recall", "F1-Score", "Time (s)"};
+        tableModel = new DefaultTableModel(columns, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+
+        resultsTable = new JTable(tableModel);
+        resultsTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        resultsTable.setRowHeight(32);
+        resultsTable.setFont(UITheme.FONT_BODY);
+        resultsTable.setBackground(UITheme.BG_CARD);
+        resultsTable.setForeground(UITheme.TEXT_MAIN);
+        resultsTable.setGridColor(UITheme.BORDER);
+        resultsTable.setSelectionBackground(UITheme.BG_CARD_LIGHT);
+        resultsTable.setSelectionForeground(UITheme.TEXT_MAIN);
+        resultsTable.getTableHeader().setFont(UITheme.FONT_HEADER);
+        resultsTable.getTableHeader().setBackground(UITheme.BG_SURFACE);
+        resultsTable.getTableHeader().setForeground(UITheme.TEXT_MAIN);
+
+        DefaultTableCellRenderer cellRenderer = new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value,
+                                                           boolean isSelected, boolean hasFocus,
+                                                           int row, int column) {
+                super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                if (column == 0) {
+                    setHorizontalAlignment(JLabel.LEFT);
+                    setFont(UITheme.FONT_BOLD);
+                    setForeground(isSelected ? Color.WHITE : UITheme.CYAN);
+                } else if (column == 1) { // Accuracy
+                    setHorizontalAlignment(JLabel.CENTER);
+                    setFont(UITheme.FONT_BOLD);
+                    setForeground(isSelected ? Color.WHITE : UITheme.SUCCESS);
+                } else {
+                    setHorizontalAlignment(JLabel.CENTER);
+                    setFont(UITheme.FONT_BODY);
+                    setForeground(isSelected ? Color.WHITE : UITheme.TEXT_MUTED);
+                }
+                setBackground(isSelected ? UITheme.BG_CARD_LIGHT : UITheme.BG_CARD);
+                return this;
+            }
+        };
+
+        for (int i = 0; i < resultsTable.getColumnCount(); i++) {
+            resultsTable.getColumnModel().getColumn(i).setCellRenderer(cellRenderer);
+        }
+
+        JScrollPane scrollPane = new JScrollPane(resultsTable);
+        scrollPane.getViewport().setBackground(UITheme.BG_CARD);
+        scrollPane.setBorder(new EmptyBorder(4, 0, 4, 0));
+
+        // ── Bottom Action Panel ──
+        viewConfusionButton = UITheme.createButton("View Confusion Matrix", UITheme.PURPLE, new Color(168, 85, 247));
         viewConfusionButton.setEnabled(false);
 
-        viewPerClassButton = new Button("Per-Class Metrics");
-        viewPerClassButton.setBackground(new Color(48, 137, 94));
-        viewPerClassButton.setForeground(Color.WHITE);
+        viewPerClassButton = UITheme.createButton("Per-Class Metrics", UITheme.SUCCESS, UITheme.SUCCESS_HOVER);
         viewPerClassButton.setEnabled(false);
 
-        selectedModelLabel = new Label("Select a model from the list above");
-        selectedModelLabel.setFont(new Font("SansSerif", Font.ITALIC, 11));
+        selectedModelLabel = new JLabel("Select a model row from the table above");
+        selectedModelLabel.setFont(UITheme.FONT_SMALL);
+        selectedModelLabel.setForeground(UITheme.TEXT_FAINT);
 
-        Panel bottomPanel = new Panel(new FlowLayout(FlowLayout.LEFT));
-        bottomPanel.setBackground(new Color(218, 228, 241));
+        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 6));
+        bottomPanel.setBackground(UITheme.BG_SURFACE);
         bottomPanel.add(viewConfusionButton);
         bottomPanel.add(viewPerClassButton);
         bottomPanel.add(selectedModelLabel);
 
-        // ── Content panel ──
-        Panel contentPanel = new Panel(new BorderLayout(4, 4));
-        contentPanel.setBackground(new Color(235, 240, 248));
-        contentPanel.add(headerRow, BorderLayout.NORTH);
-        contentPanel.add(resultsList, BorderLayout.CENTER);
-        contentPanel.add(bottomPanel, BorderLayout.SOUTH);
-
         // ── Assemble ──
-        Panel topBlock = new Panel(new BorderLayout());
-        topBlock.add(headerPanel, BorderLayout.NORTH);
-        topBlock.add(progressLabel, BorderLayout.SOUTH);
+        JPanel topContainer = new JPanel(new BorderLayout(4, 4));
+        topContainer.setOpaque(false);
+        topContainer.add(headerPanel, BorderLayout.NORTH);
+        topContainer.add(progressPanel, BorderLayout.SOUTH);
 
-        add(topBlock, BorderLayout.NORTH);
-        add(contentPanel, BorderLayout.CENTER);
+        add(topContainer, BorderLayout.NORTH);
+        add(scrollPane, BorderLayout.CENTER);
+        add(bottomPanel, BorderLayout.SOUTH);
 
         registerEvents();
     }
@@ -107,8 +174,22 @@ public class CompareModelsPanel extends Panel {
     private void registerEvents() {
         runBenchmarkButton.addActionListener(event -> startBenchmark());
 
+        resultsTable.getSelectionModel().addListSelectionListener(event -> {
+            int selected = resultsTable.getSelectedRow();
+            if (selected >= 0 && selected < benchmarkResults.size()) {
+                String model = benchmarkResults.get(selected).getModelName();
+                selectedModelLabel.setText("Selected: " + model);
+                selectedModelLabel.setForeground(UITheme.TEXT_MAIN);
+                viewConfusionButton.setEnabled(true);
+                viewPerClassButton.setEnabled(true);
+            } else {
+                viewConfusionButton.setEnabled(false);
+                viewPerClassButton.setEnabled(false);
+            }
+        });
+
         viewConfusionButton.addActionListener(event -> {
-            int selected = resultsList.getSelectedIndex();
+            int selected = resultsTable.getSelectedRow();
             if (selected >= 0 && selected < benchmarkResults.size()) {
                 ModelMetrics metrics = benchmarkResults.get(selected);
                 ConfusionMatrixDialog dialog = new ConfusionMatrixDialog(
@@ -118,7 +199,7 @@ public class CompareModelsPanel extends Panel {
         });
 
         viewPerClassButton.addActionListener(event -> {
-            int selected = resultsList.getSelectedIndex();
+            int selected = resultsTable.getSelectedRow();
             if (selected >= 0 && selected < benchmarkResults.size()) {
                 ModelMetrics metrics = benchmarkResults.get(selected);
                 PerClassMetricsDialog dialog = new PerClassMetricsDialog(
@@ -126,59 +207,52 @@ public class CompareModelsPanel extends Panel {
                 dialog.setVisible(true);
             }
         });
-
-        resultsList.addItemListener(event -> {
-            int selected = resultsList.getSelectedIndex();
-            if (selected >= 0 && selected < benchmarkResults.size()) {
-                selectedModelLabel.setText("Selected: " + benchmarkResults.get(selected).getModelName());
-                viewConfusionButton.setEnabled(true);
-                viewPerClassButton.setEnabled(true);
-            }
-        });
     }
 
     private void startBenchmark() {
         runBenchmarkButton.setEnabled(false);
-        resultsList.removeAll();
+        tableModel.setRowCount(0);
         benchmarkResults.clear();
         viewConfusionButton.setEnabled(false);
         viewPerClassButton.setEnabled(false);
-        progressLabel.setText("Starting benchmark...");
+        progressLabel.setText("Initializing benchmark suite...");
+        progressLabel.setForeground(UITheme.INFO);
+        progressBar.setValue(0);
+        progressBar.setVisible(true);
 
         Thread benchmarkThread = new Thread(() -> {
             try {
                 List<ModelMetrics> results = ModelBenchmark.runBenchmark(
-                        (modelName, status, percentComplete) ->
-                                EventQueue.invokeLater(() ->
-                                        progressLabel.setText(String.format(
-                                                "[%d%%] %s - %s",
-                                                percentComplete, modelName, status))));
+                        (modelName, status, percentComplete) -> EventQueue.invokeLater(() -> {
+                            progressLabel.setText(modelName + ": " + status);
+                            progressBar.setValue(percentComplete);
+                        }));
 
                 EventQueue.invokeLater(() -> {
                     benchmarkResults = results;
-                    resultsList.removeAll();
-                    for (ModelMetrics metrics : results) {
-                        resultsList.add(metrics.toTableRow());
+                    for (ModelMetrics m : results) {
+                        tableModel.addRow(new Object[]{
+                                m.getModelName(),
+                                String.format("%.2f%%", m.getAccuracy() * 100),
+                                String.format("%.2f%%", m.getMacroPrecision() * 100),
+                                String.format("%.2f%%", m.getMacroRecall() * 100),
+                                String.format("%.2f%%", m.getMacroF1() * 100),
+                                String.format("%.1f s", m.getTrainingTimeMs() / 1000.0)
+                        });
                     }
-                    progressLabel.setText("Benchmark complete! " + results.size()
-                            + " models evaluated. Select a row to view details.");
+                    progressLabel.setText("Benchmark complete! All 6 architectures evaluated.");
+                    progressLabel.setForeground(UITheme.SUCCESS);
+                    progressBar.setValue(100);
                     runBenchmarkButton.setEnabled(true);
                 });
             } catch (Exception exception) {
                 EventQueue.invokeLater(() -> {
                     progressLabel.setText("Benchmark failed: " + exception.getMessage());
+                    progressLabel.setForeground(UITheme.DANGER);
                     runBenchmarkButton.setEnabled(true);
                 });
-                exception.printStackTrace();
             }
-        }, "digitsense-benchmark-worker");
-        benchmarkThread.setDaemon(true);
+        }, "benchmark-worker");
         benchmarkThread.start();
     }
-
-    @Override
-    public Dimension getPreferredSize() {
-        return new Dimension(600, 300);
-    }
 }
-
