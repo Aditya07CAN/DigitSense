@@ -10,3 +10,5 @@ data/preprocessed/
 data/canvas-samples/
 data/canvas-training/
 
+# The MNIST dataset is intentionally tracked in data/mnist/.
+

@@ -6,6 +6,7 @@ DigitSense is a Java desktop application that recognizes handwritten digits usin
 
 - Handwritten single-digit and multi-digit recognition.
 - CNN model trained with the MNIST dataset.
+- MNIST dataset files and download scripts included in `data/mnist/`.
 - Drawing canvas with selectable pen colours.
 - PNG, JPG, and JPEG image import.
 - Normal, binary, and automatic recognition modes.
@@ -84,6 +85,18 @@ models/digitsense-cnn-base.zip
 ```
 
 The first training run may download MNIST and requires internet access.
+
+The dataset is also documented and downloadable from the repository:
+
+```bash
+# Linux/macOS
+bash scripts/download-mnist.sh
+
+# Windows PowerShell
+powershell -ExecutionPolicy Bypass -File scripts/download-mnist.ps1
+```
+
+See [data/README.md](data/README.md) for the dataset structure and details.
 
 ## Fine-tuning
 
