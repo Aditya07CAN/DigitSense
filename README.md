@@ -200,8 +200,11 @@ mvn exec:java
 ```
 
 ## Contributors
+## Contributors
 
-- **[Aditya07CAN](https://github.com/Aditya07CAN)** - Project Creator & Maintainer
-- **[Dasarath Mali](https://github.com/Dasarath-Mali)** - Contributor (`Dasarath_JAVA` module)
+- **[Aditya07CAN](https://github.com/Aditya07CAN)** – Project Creator & Maintainer
+- **[Abhinav](https://github.com/abhigorithm)** – Contributor (Modern UI & AI Studio module)
+- **[Dasarath Mali](https://github.com/Dasarath-Mali)** – Contributor (Extended ML Comparison & Quick Predict module)
+- **[Karthikeya Volety](https://github.com/karthikeyavolety)** - Contributor (Database operations & image processing)
 
 More technical details are available in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
