@@ -206,5 +206,6 @@ mvn exec:java
 - **[Abhinav](https://github.com/abhigorithm)** – Contributor (Modern UI & AI Studio module)
 - **[Dasarath Mali](https://github.com/Dasarath-Mali)** – Contributor (Extended ML Comparison & Quick Predict module)
 - **[Karthikeya Volety](https://github.com/karthikeyavolety)** - Contributor (Database operations & image processing)
+- **[Tondepu Sanjeev](https://github.com/sanjeevtondepu5-eng)** - Contributor (Roman Numbers & Alphabet's predicting models)
 
 More technical details are available in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
